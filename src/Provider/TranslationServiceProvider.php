@@ -55,6 +55,15 @@ class TranslationServiceProvider implements ServiceProviderInterface
                 ];
             }
         );
+        
+        $app['translator.paths'] = $app->share(
+            function () {
+                return [
+                    "app/resources/translations",
+                    "root/app/resources/translations"
+                ];
+            }
+        );
 
         $app['translator.resources'] = $app->extend(
             'translator.resources',
@@ -109,18 +118,16 @@ class TranslationServiceProvider implements ServiceProviderInterface
     public static function addResources(Application $app, $locale)
     {
         // Directories to look for translation file(s)
-        $transDirs = array_unique(
-            [
-                $app['resources']->getPath("app/resources/translations/{$locale}"),
-                $app['resources']->getPath("root/app/resources/translations/{$locale}"),
-            ]
-        );
+        $transDirs = array_unique($app['translator.paths']);
 
         $needsSecondPass = true;
-
+        
         $resources = [];
 
         foreach ($transDirs as $transDir) {
+            
+            $transDir = $app['resources']->getPath($transDir."/".$locale);
+            
             if (!is_dir($transDir) || !is_readable($transDir)) {
                 continue;
             }
